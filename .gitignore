@@ -1,0 +1,10 @@
+# Unity generated folders
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+Logs/
+
+# macOS-specific files
+.DS_Store
