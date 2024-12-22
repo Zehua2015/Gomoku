@@ -4,9 +4,18 @@ using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
 
+public enum GameState {
+    Ready = 1,
+    GameOver = 3,
+}
+
 public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
 {
     public GameObject player;
+    public PieceColor playerTurn = PieceColor.Black;
+    public GameState gameState = GameState.Ready;
+    //public TextMesh
+    public GameObject gameOver;
 
     // Start is called before the first frame update
     void Start()
@@ -50,6 +59,19 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
         {
             newPlayer.GetComponent<Gomoku_Player>().pieceColor = PieceColor.White;
         }
+    }
+
+    [PunRPC]
+    public void ChangeTurn()
+    {
+        playerTurn = playerTurn == PieceColor.Black ? PieceColor.White : PieceColor.Black;
+    }
+
+    [PunRPC]
+    public void GameOver()
+    {
+        gameState = GameState.GameOver;
+        gameOver.SetActive(true);
     }
 
 }

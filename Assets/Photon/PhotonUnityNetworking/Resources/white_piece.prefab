@@ -140,4 +140,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   row: 0
   column: 0
-  pieceColor: 0
+  pieceColor: 1
