@@ -23,6 +23,15 @@ public class Gomoku_Player : MonoBehaviour
         zeroPointPosition = new Vector3(-2.07f, -2.07f, 0);
         //cellWidth = 0.4308f; // 4.41/19
         pv = this.GetComponent<PhotonView>();
+
+        if (pv.IsMine)
+        {
+            GameObject.FindObjectOfType<Gomoku_NetworkManager>().SetSelfText(pieceColor);
+        }
+        else
+        {
+            GameObject.FindObjectOfType<Gomoku_NetworkManager>().SetOpponentText(pieceColor);
+        }
     }
 
     // Update is called once per frame
@@ -73,6 +82,9 @@ public class Gomoku_Player : MonoBehaviour
                 newPiece.GetComponent<PhotonView>().RPC("SetRowColumnValue", RpcTarget.All, rowColumnValue);
                 currentPiece = newPiece.GetComponent<Gomoku_Piece>();
             }
+
+            // Play clicking sound
+            GameObject.FindObjectOfType<Gomoku_NetworkManager>().playClickingAudio();
 
             // Check if five in a row
             currentPieceList = GameObject.FindObjectsOfType<Gomoku_Piece>().ToList();
@@ -235,4 +247,10 @@ public class Gomoku_Player : MonoBehaviour
         BottomLeft = 7,
     }
 
+
+    [PunRPC]
+    public void SetPieceColor(PieceColor pc)
+    {
+        pieceColor = pc; 
+    }
 }
