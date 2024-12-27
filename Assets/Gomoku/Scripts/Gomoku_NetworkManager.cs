@@ -79,13 +79,15 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
     public void ChangeTurn()
     {
         playerTurn = playerTurn == PieceColor.Black ? PieceColor.White : PieceColor.Black;
+        currentRound.text = playerTurn == PieceColor.Black ? "Current Round: Black" : "Current Round: White";
     }
 
     [PunRPC]
-    public void GameOver()
+    public void GameOver(PieceColor winColor)
     {
         gameState = GameState.GameOver;
         gameOver.SetActive(true);
+        winTxt.text = winColor == PieceColor.Black ? "Black Win!" : "White Win!"; 
     }
 
     public void playClickingAudio()
@@ -96,7 +98,15 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
 
     public void onClickReadyButton()
     {
-
+        readyButtonTxt.text = "Ready~";
+        var players = GameObject.FindObjectsOfType<Gomoku_Player>();
+        foreach (var item in players)
+        {
+            if (item.GetComponent<PhotonView>().IsMine)
+            {
+                item.GetComponent<PhotonView>().RPC("SetReadyState", RpcTarget.All); 
+            }
+        }
     }
     public void SetUIState()
     {

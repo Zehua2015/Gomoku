@@ -43,6 +43,7 @@ MonoBehaviour:
   - ChangeTurn
   - GameOver
   - SetPieceColor
+  - SetReadyState
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

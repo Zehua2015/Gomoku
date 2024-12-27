@@ -5,6 +5,12 @@ using Photon.Pun;
 using System.Linq;
 //using static UnityEditor.Progress;
 
+public enum PlayerState
+{
+    NotReady = 0,
+    Ready = 1,
+}
+
 public class Gomoku_Player : MonoBehaviour
 {
     public Vector3 zeroPointPosition;
@@ -17,6 +23,8 @@ public class Gomoku_Player : MonoBehaviour
     public GameObject black_piece;
     public GameObject white_piece;
     public List<Gomoku_Piece> currentPieceList = new List<Gomoku_Piece>();
+
+    public PlayerState playerState = PlayerState.NotReady;
     // Start is called before the first frame update
     void Start()
     {
@@ -39,7 +47,15 @@ public class Gomoku_Player : MonoBehaviour
     {
         if (!pv.IsMine) return;
         if (GameObject.FindObjectOfType<Gomoku_NetworkManager>().playerTurn != pieceColor) return;
+        // Check..../////
         if (GameObject.FindObjectOfType<Gomoku_NetworkManager>().gameState != GameState.Ready) return;
+
+        var players = GameObject.FindObjectsOfType<Gomoku_Player>();
+        foreach (var item in players)
+        {
+            if (item.playerState != PlayerState.Ready) return;
+        }
+
         if (Input.GetMouseButtonDown(0))
         {
             GameObject newPiece;
@@ -92,7 +108,7 @@ public class Gomoku_Player : MonoBehaviour
 
             if (isFive) 
             {
-                GameObject.FindObjectOfType<Gomoku_NetworkManager>().GetComponent<PhotonView>().RPC("GameOver",RpcTarget.All);
+                GameObject.FindObjectOfType<Gomoku_NetworkManager>().GetComponent<PhotonView>().RPC("GameOver",RpcTarget.All, pieceColor);
             }
 
 
@@ -252,5 +268,19 @@ public class Gomoku_Player : MonoBehaviour
     public void SetPieceColor(PieceColor pc)
     {
         pieceColor = pc; 
+    }
+
+    [PunRPC]
+    public void SetReadyState()
+    {
+        playerState = PlayerState.Ready;
+        if (pv.IsMine)
+        {
+            GameObject.FindAnyObjectByType<Gomoku_NetworkManager>().selfReady.text = "Ready";
+        }
+        else
+        {
+            GameObject.FindAnyObjectByType<Gomoku_NetworkManager>().OpponentReady.text = "Ready";
+        }
     }
 }
