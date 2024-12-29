@@ -23,8 +23,8 @@ public class Gomoku_Player : MonoBehaviour
     public GameObject black_piece;
     public GameObject white_piece;
     public List<Gomoku_Piece> currentPieceList = new List<Gomoku_Piece>();
-
     public PlayerState playerState = PlayerState.NotReady;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -106,7 +106,7 @@ public class Gomoku_Player : MonoBehaviour
             currentPieceList = GameObject.FindObjectsOfType<Gomoku_Piece>().ToList();
             bool isFive = IfFivePiece(currentPieceList, currentPiece);
 
-            if (isFive) 
+            if (isFive)
             {
                 GameObject.FindObjectOfType<Gomoku_NetworkManager>().GetComponent<PhotonView>().RPC("GameOver",RpcTarget.All, pieceColor);
             }
@@ -282,5 +282,11 @@ public class Gomoku_Player : MonoBehaviour
         {
             GameObject.FindAnyObjectByType<Gomoku_NetworkManager>().OpponentReady.text = "Ready";
         }
+    }
+
+    [PunRPC]
+    public void SetNotReadyState()
+    {
+        playerState = PlayerState.NotReady;
     }
 }

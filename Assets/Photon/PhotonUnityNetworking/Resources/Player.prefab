@@ -73,3 +73,4 @@ MonoBehaviour:
   black_piece: {fileID: 3533552135516484057, guid: cd328ac82f5654eef83a24f6300fa743, type: 3}
   white_piece: {fileID: 7841268036669612680, guid: 098586c0bd19a4f1197bee6c8393ee54, type: 3}
   currentPieceList: []
+  playerState: 0

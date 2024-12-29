@@ -85,9 +85,64 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
     [PunRPC]
     public void GameOver(PieceColor winColor)
     {
+        // Reset UI, prepare for next round if applicable
+        selfReady.text = "Not Ready";
+        OpponentReady.text = "Not Ready";
+        // Set NotReady state for both players.
+        var players = GameObject.FindObjectsOfType<Gomoku_Player>();
+        foreach (var item in players)
+        {
+            item.GetComponent<PhotonView>().RPC("SetNotReadyState", RpcTarget.All);
+        }
+
         gameState = GameState.GameOver;
         gameOver.SetActive(true);
-        winTxt.text = winColor == PieceColor.Black ? "Black Win!" : "White Win!"; 
+        winTxt.text = winColor == PieceColor.Black ? "Black Win!" : "White Win!";
+        readyButtonTxt.text = "Play Again";
+    }
+
+    public void clearBoard()
+    {
+        GameObject[] allPieces = GameObject.FindGameObjectsWithTag("gamePiece");
+
+        foreach (var item in allPieces)
+        {
+            Destroy(item);
+        }
+    }
+
+    //[PunRPC]
+    public void StartOver()
+    {
+        resetUIState();
+        clearBoard();
+        gameState = GameState.Ready;
+        playerTurn = PieceColor.Black;
+        changeSide();
+    }
+
+    public void changeSide()
+    {
+        var players = GameObject.FindObjectsOfType<Gomoku_Player>();
+        foreach (var item in players)
+        {
+            item.pieceColor = item.pieceColor == PieceColor.Black ? PieceColor.White : PieceColor.Black;
+        }
+        OpponentPiece.text = OpponentPiece.text == "Black" ? "White" : "Black";
+        selfPiece.text = selfPiece.text == "Black" ? "White" : "Black";
+    }
+
+    public void getReady()
+    {
+        readyButtonTxt.text = "Ready~";
+        var players = GameObject.FindObjectsOfType<Gomoku_Player>();
+        foreach (var item in players)
+        {
+            if (item.GetComponent<PhotonView>().IsMine)
+            {
+                item.GetComponent<PhotonView>().RPC("SetReadyState", RpcTarget.All);
+            }
+        }
     }
 
     public void playClickingAudio()
@@ -98,23 +153,26 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
 
     public void onClickReadyButton()
     {
-        readyButtonTxt.text = "Ready~";
-        var players = GameObject.FindObjectsOfType<Gomoku_Player>();
-        foreach (var item in players)
+        if (gameState == GameState.GameOver)
         {
-            if (item.GetComponent<PhotonView>().IsMine)
-            {
-                item.GetComponent<PhotonView>().RPC("SetReadyState", RpcTarget.All); 
-            }
+            StartOver();
         }
+            getReady();
+
     }
     public void SetUIState()
     {
         readyButtonTxt.text = "Ready";
-        selfPiece.text = "";
+        selfPiece.text = "Joining...";
         selfReady.text = "";
-        OpponentPiece.text = "";
-        OpponentReady .text = "";
+        OpponentPiece.text = "Searching...";
+        OpponentReady.text = "";
+        currentRound.text = "";
+        gameOverTxt.gameObject.SetActive(false);
+    }
+
+    public void resetUIState()
+    {
         currentRound.text = "";
         gameOverTxt.gameObject.SetActive(false);
     }
@@ -122,11 +180,11 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
     public void SetSelfText(PieceColor pieceColor)
     {
         selfPiece.text = pieceColor == PieceColor.Black ? "Black" : "White";
-        selfReady.text = "Not Ready...";
+        selfReady.text = "Not Ready";
     }
     public void SetOpponentText(PieceColor pieceColor)
     {
         OpponentPiece.text = pieceColor == PieceColor.Black ? "Black" : "White";
-        OpponentReady.text = "Not Ready...";
+        OpponentReady.text = "Not Ready";
     }
 }

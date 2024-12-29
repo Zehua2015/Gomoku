@@ -44,6 +44,8 @@ MonoBehaviour:
   - GameOver
   - SetPieceColor
   - SetReadyState
+  - SetNotReadyState
+  - StartOver
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0
