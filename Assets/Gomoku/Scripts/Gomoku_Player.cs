@@ -1,8 +1,8 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 using System.Linq;
+using ExitGames.Client.Photon;
 //using static UnityEditor.Progress;
 
 public enum PlayerState
@@ -281,10 +281,20 @@ public class Gomoku_Player : MonoBehaviour
         pieceColor = pc; 
     }
 
+
+
     [PunRPC]
     public void SetReadyState()
     {
+        // Hashtable first
+        Hashtable props = new Hashtable
+        {
+            { "PlayerState", PlayerState.Ready }
+        };
+        PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+
         playerState = PlayerState.Ready;
+
         if (pv.IsMine)
         {
             GameObject.FindAnyObjectByType<Gomoku_NetworkManager>().selfReady.text = "Ready";

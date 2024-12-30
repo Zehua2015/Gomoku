@@ -1,8 +1,9 @@
-using System.Collections;
+//using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
+using ExitGames.Client.Photon;
 using UnityEngine.UI;
 using TMPro;
 
@@ -28,12 +29,16 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
     public TextMeshProUGUI OpponentPiece;
     public TextMeshProUGUI OpponentReady;
     public TextMeshProUGUI currentRound;
+    public TextMeshProUGUI waitTxt;
     public TextMeshProUGUI gameOverTxt;
     public TextMeshProUGUI winTxt;
+
 
     private GameObject myPlayer;
     GameObject newPlayer;
     Gomoku_Player gomoku_Player;
+    Gomoku_Player[] players;
+    
 
 
     // Start is called before the first frame update
@@ -42,13 +47,19 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
         SetUIState(); 
         // Connect Server
         PhotonNetwork.ConnectUsingSettings();
+        readyBtn.gameObject.SetActive(false);
     }
 
-    //// Update is called once per frame
-    //void Update()
-    //{
+    // Update is called once per frame
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            PrintLocalPlayerProperties();
+        }
+        players = FindObjectsOfType<Gomoku_Player>();
 
-    //}
+    }
 
     public override void OnConnectedToMaster()
     {
@@ -65,6 +76,7 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
     {
         base.OnJoinedRoom();
         print("Room Joined.");
+        readyBtn.gameObject.SetActive(true);
 
         // Create online player (in both room);
         if (player == null) return;
@@ -74,13 +86,95 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
         // Initialize player properties
         if (PhotonNetwork.IsMasterClient)
         {
+            // TODO: delete RPC
             newPlayer.GetComponent<PhotonView>().RPC("SetPieceColor", RpcTarget.All, PieceColor.Black);
+            Hashtable props = new Hashtable
+            {
+                { "PlayerState", PlayerState.NotReady },
+                { "PieceColor", PieceColor.Black }
+            };
+            PhotonNetwork.LocalPlayer.SetCustomProperties(props);
         }
         else
         {
+            // TODO: delete RPC
             newPlayer.GetComponent<PhotonView>().RPC("SetPieceColor", RpcTarget.All, PieceColor.White) ;
+
+            Hashtable props = new Hashtable
+            {
+                { "PlayerState", PlayerState.NotReady },
+                { "PieceColor", PieceColor.White }
+            };
+            PhotonNetwork.LocalPlayer.SetCustomProperties(props);
+
+            //// Find the other player (master client) and get its state
+            //PlayerState state = new PlayerState();
+            //foreach (var item in PhotonNetwork.PlayerList)
+            //{
+            //    if (item == PhotonNetwork.LocalPlayer) continue;
+            //    state = (PlayerState)item.CustomProperties["PlayerState"];
+            //}
+
+            //if (state == PlayerState.Ready)
+            //{
+            //    foreach (var pl in players)
+            //    {
+            //        if (!pl.GetComponent<PhotonView>().IsMine)
+            //            pl.SetReadyState();
+            //    }
+            //}
         }
     }
+
+    public override void OnPlayerEnteredRoom(Player nPlayer)
+    {
+        base.OnPlayerEnteredRoom(nPlayer);
+        if (newPlayer.GetComponent<Gomoku_Player>().playerState == PlayerState.NotReady) return;
+        foreach (var item in players)
+        {
+            if (item.GetComponent<PhotonView>().IsMine)
+            {
+                item.GetComponent<PhotonView>().RPC("SetReadyState", RpcTarget.All);
+            }
+        }
+
+    }
+
+    public override void OnPlayerPropertiesUpdate(Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps)
+    {
+        base.OnPlayerPropertiesUpdate(targetPlayer, changedProps);
+        foreach (var keys in changedProps.Keys)
+        {
+            if (keys.Equals("PlayerState"))
+            {
+                PlayerState newState = (PlayerState)changedProps["PlayerState"];
+                // ......
+            }
+            // Renew UI here (instead of using RPC)
+            if (targetPlayer.IsLocal)
+            {
+                // ......
+                // selfReadyTxt.text = ....
+            }
+        }
+
+
+
+    }
+
+
+    public void PrintLocalPlayerProperties()
+    {
+        var customProperties = PhotonNetwork.LocalPlayer.CustomProperties;
+
+        foreach (var key in customProperties.Keys)
+        {
+            Debug.Log($"Key: {key}, Value: {customProperties[key]}");
+        }
+    }
+
+
+
 
     [PunRPC]
     public void ChangeTurn()
@@ -102,11 +196,12 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
     {
         clearBoard();
         gameOverTxt.gameObject.SetActive(false);
+        waitTxt.gameObject.SetActive(false);
         gameState = GameState.Start;
-        if (gomoku_Player.pieceColor == PieceColor.Black)
-        {
+        //if (gomoku_Player.pieceColor == PieceColor.Black)
+        //{
             currentRound.text = gomoku_Player.pieceColor == PieceColor.Black ? "Your round!" : "Opponent's Round";
-        }
+        //}
     }
 
     [PunRPC]
@@ -127,6 +222,7 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
 
         gameState = GameState.GameOver;
         gameOver.SetActive(true);
+        //waitTxt.gameObject.SetActive(true);
         winTxt.text = winColor == gomoku_Player.pieceColor ? "You Win!" : "You lose..";
         winTxt.color = winColor == gomoku_Player.pieceColor ? Color.green : Color.red;
         readyButtonTxt.text = "Play Again";
@@ -209,6 +305,8 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
     public void resetUIState()
     {
         currentRound.text = "";
+        waitTxt.gameObject.SetActive(true);
+
         //gameOverTxt.gameObject.SetActive(false);
     }
 
