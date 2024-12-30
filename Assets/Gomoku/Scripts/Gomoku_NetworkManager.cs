@@ -100,6 +100,8 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
     [PunRPC]
     public void SetGameStart()
     {
+        clearBoard();
+        gameOverTxt.gameObject.SetActive(false);
         gameState = GameState.Start;
         if (gomoku_Player.pieceColor == PieceColor.Black)
         {
@@ -140,11 +142,10 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
         }
     }
 
-    //[PunRPC]
     public void StartOver()
     {
         resetUIState();
-        clearBoard();
+        //clearBoard();
         gameState = GameState.Ready;
         playerTurn = PieceColor.Black;
         changeSide();
@@ -163,10 +164,12 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
 
     public void getReady()
     {
+        // Change ready button transparency
         Color color = readyBtn.GetComponent<Image>().color;
         color.a = 0.5f;
         readyBtn.GetComponent<Image>().color = color;
         readyButtonTxt.text = "Ready~";
+
         var players = GameObject.FindObjectsOfType<Gomoku_Player>();
         foreach (var item in players)
         {
@@ -206,7 +209,7 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
     public void resetUIState()
     {
         currentRound.text = "";
-        gameOverTxt.gameObject.SetActive(false);
+        //gameOverTxt.gameObject.SetActive(false);
     }
 
     public void SetSelfText(PieceColor pieceColor)

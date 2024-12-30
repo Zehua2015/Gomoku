@@ -50,11 +50,11 @@ public class Gomoku_Player : MonoBehaviour
         // Only operate if this is your client player
         if (!pv.IsMine) return;
 
-        // check if every (both) player get ready, if so set game state to start and start game
+        // check if every (BOTH) player get ready, if so set game state to start and start game
         var players = GameObject.FindObjectsOfType<Gomoku_Player>();
         foreach (var item in players)
         {
-            if (item.playerState != PlayerState.Ready) return;
+            if (item.playerState != PlayerState.Ready || PhotonNetwork.PlayerList.Length != 2) return;
         }
         if (networkManager.gameState != GameState.Start)
         {
@@ -126,7 +126,6 @@ public class Gomoku_Player : MonoBehaviour
 
             // change turn
             GameObject.FindObjectOfType<Gomoku_NetworkManager>().gameObject.GetComponent<PhotonView>().RPC("ChangeTurn",RpcTarget.All);
-            //GameObject.FindObjectOfType<Gomoku_NetworkManager>().ChangeCurrentRoundTxt();
 
 
         }
