@@ -74,3 +74,4 @@ MonoBehaviour:
   white_piece: {fileID: 7841268036669612680, guid: 098586c0bd19a4f1197bee6c8393ee54, type: 3}
   currentPieceList: []
   playerState: 0
+  networkManager: {fileID: 0}

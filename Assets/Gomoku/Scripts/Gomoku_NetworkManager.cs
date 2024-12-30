@@ -8,6 +8,7 @@ using TMPro;
 
 public enum GameState {
     Ready = 1,
+    Start = 2,
     GameOver = 3,
 }
 
@@ -20,6 +21,7 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
     public GameObject gameOver;
     public AudioSource clickingAudio;
 
+    public Button readyBtn;
     public TextMeshProUGUI readyButtonTxt;
     public TextMeshProUGUI selfPiece;
     public TextMeshProUGUI selfReady;
@@ -28,6 +30,10 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
     public TextMeshProUGUI currentRound;
     public TextMeshProUGUI gameOverTxt;
     public TextMeshProUGUI winTxt;
+
+    private GameObject myPlayer;
+    GameObject newPlayer;
+    Gomoku_Player gomoku_Player;
 
 
     // Start is called before the first frame update
@@ -62,12 +68,13 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
 
         // Create online player (in both room);
         if (player == null) return;
-        GameObject newPlayer = PhotonNetwork.Instantiate(player.name, Vector3.zero, player.transform.rotation);
+        newPlayer = PhotonNetwork.Instantiate(player.name, Vector3.zero, player.transform.rotation);
+        gomoku_Player = newPlayer.GetComponent<Gomoku_Player>();
 
         // Initialize player properties
         if (PhotonNetwork.IsMasterClient)
         {
-            newPlayer.GetComponent<PhotonView>().RPC("SetPieceColor", RpcTarget.All, PieceColor.Black); 
+            newPlayer.GetComponent<PhotonView>().RPC("SetPieceColor", RpcTarget.All, PieceColor.Black);
         }
         else
         {
@@ -79,12 +86,33 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
     public void ChangeTurn()
     {
         playerTurn = playerTurn == PieceColor.Black ? PieceColor.White : PieceColor.Black;
-        currentRound.text = playerTurn == PieceColor.Black ? "Current Round: Black" : "Current Round: White";
+        if (gameState == GameState.GameOver)
+        {
+            currentRound.text = "";
+        }
+        else
+        {
+            currentRound.text = currentRound.text == "Your round!" ? "Opponent's Round" : "Your round!";
+        }
+
+    }
+
+    [PunRPC]
+    public void SetGameStart()
+    {
+        gameState = GameState.Start;
+        if (gomoku_Player.pieceColor == PieceColor.Black)
+        {
+            currentRound.text = gomoku_Player.pieceColor == PieceColor.Black ? "Your round!" : "Opponent's Round";
+        }
     }
 
     [PunRPC]
     public void GameOver(PieceColor winColor)
     {
+        Color color = readyBtn.GetComponent<Image>().color;
+        color.a = 1f;
+        readyBtn.GetComponent<Image>().color = color;
         // Reset UI, prepare for next round if applicable
         selfReady.text = "Not Ready";
         OpponentReady.text = "Not Ready";
@@ -97,7 +125,8 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
 
         gameState = GameState.GameOver;
         gameOver.SetActive(true);
-        winTxt.text = winColor == PieceColor.Black ? "Black Win!" : "White Win!";
+        winTxt.text = winColor == gomoku_Player.pieceColor ? "You Win!" : "You lose..";
+        winTxt.color = winColor == gomoku_Player.pieceColor ? Color.green : Color.red;
         readyButtonTxt.text = "Play Again";
     }
 
@@ -134,6 +163,9 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
 
     public void getReady()
     {
+        Color color = readyBtn.GetComponent<Image>().color;
+        color.a = 0.5f;
+        readyBtn.GetComponent<Image>().color = color;
         readyButtonTxt.text = "Ready~";
         var players = GameObject.FindObjectsOfType<Gomoku_Player>();
         foreach (var item in players)

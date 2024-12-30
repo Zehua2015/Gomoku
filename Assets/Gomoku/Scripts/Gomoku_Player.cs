@@ -24,10 +24,12 @@ public class Gomoku_Player : MonoBehaviour
     public GameObject white_piece;
     public List<Gomoku_Piece> currentPieceList = new List<Gomoku_Piece>();
     public PlayerState playerState = PlayerState.NotReady;
+    public Gomoku_NetworkManager networkManager;
 
     // Start is called before the first frame update
     void Start()
     {
+        networkManager = FindObjectOfType<Gomoku_NetworkManager>();
         zeroPointPosition = new Vector3(-2.07f, -2.07f, 0);
         //cellWidth = 0.4308f; // 4.41/19
         pv = this.GetComponent<PhotonView>();
@@ -45,17 +47,25 @@ public class Gomoku_Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // Only operate if this is your client player
         if (!pv.IsMine) return;
-        if (GameObject.FindObjectOfType<Gomoku_NetworkManager>().playerTurn != pieceColor) return;
-        // Check..../////
-        if (GameObject.FindObjectOfType<Gomoku_NetworkManager>().gameState != GameState.Ready) return;
 
+        // check if every (both) player get ready, if so set game state to start and start game
         var players = GameObject.FindObjectsOfType<Gomoku_Player>();
         foreach (var item in players)
         {
             if (item.playerState != PlayerState.Ready) return;
         }
+        if (networkManager.gameState != GameState.Start)
+        {
+            networkManager.SetGameStart();
+        }
 
+        // Return if this is not client player's turn
+        if (GameObject.FindObjectOfType<Gomoku_NetworkManager>().playerTurn != pieceColor) return;
+        // Check..../////
+        //if (GameObject.FindObjectOfType<Gomoku_NetworkManager>().gameState != GameState.Start) return;
+        
         if (Input.GetMouseButtonDown(0))
         {
             GameObject newPiece;
@@ -78,7 +88,8 @@ public class Gomoku_Player : MonoBehaviour
                 {
                     print("already a piece here!");
                     return;
-                }    
+                }
+                
             }
 
 
@@ -115,6 +126,7 @@ public class Gomoku_Player : MonoBehaviour
 
             // change turn
             GameObject.FindObjectOfType<Gomoku_NetworkManager>().gameObject.GetComponent<PhotonView>().RPC("ChangeTurn",RpcTarget.All);
+            //GameObject.FindObjectOfType<Gomoku_NetworkManager>().ChangeCurrentRoundTxt();
 
 
         }

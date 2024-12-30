@@ -676,6 +676,7 @@ MonoBehaviour:
   gameState: 1
   gameOver: {fileID: 1870616911}
   clickingAudio: {fileID: 1916004021}
+  readyBtn: {fileID: 199054380}
   readyButtonTxt: {fileID: 475394706}
   selfPiece: {fileID: 1723978388}
   selfReady: {fileID: 1592037064}
