@@ -47,6 +47,13 @@ MonoBehaviour:
   - SetNotReadyState
   - StartOver
   - SetGameStart
+  - StartTimer
+  - StopTimer
+  - RunTimer
+  - ResetTimer
+  - EndTurn
+  - StartTurn
+  - EndTimer
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

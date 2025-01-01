@@ -1,14 +1,14 @@
 ﻿<Properties StartupConfiguration="{BC0BCB4B-CA3B-0EA9-036A-BCB3B37ED3D4}|">
-  <MultiItemStartupConfigurations />
-  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
+    <BreakpointStore>
+      <Breakpoint file="/Users/lusha/Downloads/tryUnity/Gomuku/Assets/Gomoku/Scripts/Gomoku_NetworkManager.cs" relfile="Assets/Gomoku/Scripts/Gomoku_NetworkManager.cs" line="236" column="1" />
+    </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="95003cbc-fb49-4215-97c6-dad64d67f9e4" />
+  <MultiItemStartupConfigurations />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Gomoku/Scripts/Gomoku_NetworkManager.cs">
     <Files>
-      <File FileName="Assets/Gomoku/Scripts/Gomoku_NetworkManager.cs" Line="170" Column="32" />
+      <File FileName="Assets/Gomoku/Scripts/Gomoku_NetworkManager.cs" Line="79" Column="45" />
+      <File FileName="Assets/Gomoku/Scripts/Gomoku_Player.cs" Line="61" Column="37" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
@@ -24,4 +24,7 @@
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="1b5dfb4a-7a39-4380-abd1-c16c31d82a19" />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
 </Properties>

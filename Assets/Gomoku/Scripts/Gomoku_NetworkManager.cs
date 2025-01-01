@@ -33,6 +33,13 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
     public TextMeshProUGUI gameOverTxt;
     public TextMeshProUGUI winTxt;
 
+    public TextMeshProUGUI selfTimerTxt;
+    public TextMeshProUGUI opponentTimerTxt;
+    //public bool isTimerRunning = false;
+
+    //private float selfTime = 30f;
+    //private float opponentTime = 30f;
+
 
     private GameObject myPlayer;
     GameObject newPlayer;
@@ -58,7 +65,6 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
             PrintLocalPlayerProperties();
         }
         players = FindObjectsOfType<Gomoku_Player>();
-
     }
 
     public override void OnConnectedToMaster()
@@ -180,6 +186,13 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
     public void ChangeTurn()
     {
         playerTurn = playerTurn == PieceColor.Black ? PieceColor.White : PieceColor.Black;
+        foreach (var item in players)
+        {
+            if (item.pieceColor == playerTurn)
+            {
+                item.StartTimer();
+            }
+        }
         if (gameState == GameState.GameOver)
         {
             currentRound.text = "";
@@ -190,6 +203,12 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
         }
 
     }
+
+
+
+    ///
+    /// Player Timer moved to Gomoku_Player.cs
+    ///
 
     [PunRPC]
     public void SetGameStart()
@@ -202,6 +221,16 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
         //{
             currentRound.text = gomoku_Player.pieceColor == PieceColor.Black ? "Your round!" : "Opponent's Round";
         //}
+
+        // start black timer
+        //foreach (var item in players)
+        //{
+        //    if (item.GetComponent<PhotonView>().IsMine)
+        //    {
+        //        item.GetComponent<PhotonView>().RPC("RunTimer", RpcTarget.All, selfTimerTxt.text);
+        //    }
+        //}
+
     }
 
     [PunRPC]
@@ -240,6 +269,7 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
 
     public void StartOver()
     {
+        gomoku_Player.GetComponent<PhotonView>().RPC("ResetTimer", RpcTarget.All);
         resetUIState();
         //clearBoard();
         gameState = GameState.Ready;
@@ -320,4 +350,23 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
         OpponentPiece.text = pieceColor == PieceColor.Black ? "Black" : "White";
         OpponentReady.text = "Not Ready";
     }
+
+    public void UpdateTimerUI(float time)
+    {
+        //int min = Mathf.FloorToInt(time / 60);
+        //int sec = Mathf.FloorToInt(time % 60);
+
+        //selfTimerTxt.text = $"{min:00}:{sec:00}";
+        selfTimerTxt.text = $"{time:00}S";
+    }
+
+    public void UpdateOpponentTimerUI(float time)
+    {
+        //int min = Mathf.FloorToInt(time / 60);
+        //int sec = Mathf.FloorToInt(time % 60);
+
+        //opponentTimerTxt.text = $"{min:00}:{sec:00}";
+        opponentTimerTxt.text = $"{time:00}S";
+    }
+
 }

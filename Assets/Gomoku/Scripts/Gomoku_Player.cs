@@ -3,7 +3,6 @@ using UnityEngine;
 using Photon.Pun;
 using System.Linq;
 using ExitGames.Client.Photon;
-//using static UnityEditor.Progress;
 
 public enum PlayerState
 {
@@ -25,10 +24,17 @@ public class Gomoku_Player : MonoBehaviour
     public List<Gomoku_Piece> currentPieceList = new List<Gomoku_Piece>();
     public PlayerState playerState = PlayerState.NotReady;
     public Gomoku_NetworkManager networkManager;
+    private float playerTime = 20f;
+    public bool isTimerRunning;
+
+    public double startTime;
 
     // Start is called before the first frame update
     void Start()
     {
+        Application.targetFrameRate = 30;
+        //isTimerRunning = true;
+
         networkManager = FindObjectOfType<Gomoku_NetworkManager>();
         zeroPointPosition = new Vector3(-2.07f, -2.07f, 0);
         //cellWidth = 0.4308f; // 4.41/19
@@ -59,13 +65,23 @@ public class Gomoku_Player : MonoBehaviour
         if (networkManager.gameState != GameState.Start)
         {
             networkManager.SetGameStart();
+            gameObject.GetComponent<PhotonView>().RPC("StartTimer", RpcTarget.All);
+
         }
 
         // Return if this is not client player's turn
         if (GameObject.FindObjectOfType<Gomoku_NetworkManager>().playerTurn != pieceColor) return;
-        // Check..../////
-        //if (GameObject.FindObjectOfType<Gomoku_NetworkManager>().gameState != GameState.Start) return;
-        
+
+        // check if time out
+        if (!isTimerRunning)
+        {
+            var color = pieceColor == PieceColor.Black ? PieceColor.White : PieceColor.Black;
+            GameObject.FindObjectOfType<Gomoku_NetworkManager>().GetComponent<PhotonView>().RPC("GameOver", RpcTarget.All, color);
+        }
+        // Start timer
+        gameObject.GetComponent<PhotonView>().RPC("RunTimer", RpcTarget.All);
+        //RunTimer();
+
         if (Input.GetMouseButtonDown(0))
         {
             GameObject newPiece;
@@ -119,12 +135,14 @@ public class Gomoku_Player : MonoBehaviour
 
             if (isFive)
             {
+                gameObject.GetComponent<PhotonView>().RPC("EndTimer", RpcTarget.All);
                 GameObject.FindObjectOfType<Gomoku_NetworkManager>().GetComponent<PhotonView>().RPC("GameOver",RpcTarget.All, pieceColor);
             }
 
 
 
             // change turn
+            gameObject.GetComponent<PhotonView>().RPC("EndTimer", RpcTarget.All);
             GameObject.FindObjectOfType<Gomoku_NetworkManager>().gameObject.GetComponent<PhotonView>().RPC("ChangeTurn",RpcTarget.All);
 
 
@@ -310,4 +328,63 @@ public class Gomoku_Player : MonoBehaviour
     {
         playerState = PlayerState.NotReady;
     }
+
+
+    /// <summary>
+    /// Start timer if true, Pause timer if false
+    /// Return true if time remains, return false if time is up
+    /// </summary>
+    /// <param name="t"></param>
+
+    [PunRPC]
+    public void RunTimer()
+    {
+        //isTimerRunning = true;
+        //playerTime -= Time.deltaTime;
+
+        double elapsed = PhotonNetwork.Time - startTime;
+        playerTime = Mathf.Max(0, 20f - (float)elapsed);
+
+        if (playerTime <= 0)
+        {
+            isTimerRunning = false;
+            return;
+        }
+        if (pv.IsMine)
+        {
+            networkManager.UpdateTimerUI(playerTime);
+        }
+        else
+        {
+            networkManager.UpdateOpponentTimerUI(playerTime);
+        }
+        return;
+    }
+
+    public float getPlayerTime()
+    {
+        return playerTime;
+    }
+
+    [PunRPC]
+    public void ResetTimer()
+    {
+        playerTime = 20f;
+    }
+
+    // renew timer logic *******
+    [PunRPC]
+    public void StartTimer()
+    {
+        startTime = PhotonNetwork.Time;
+        isTimerRunning = true;
+        playerTime = 20f;
+    }
+
+    [PunRPC]
+    public void EndTimer()
+    {
+        isTimerRunning = false;
+    }
+
 }

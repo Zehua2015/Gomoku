@@ -75,3 +75,5 @@ MonoBehaviour:
   currentPieceList: []
   playerState: 0
   networkManager: {fileID: 0}
+  isTimerRunning: 0
+  startTime: 0
