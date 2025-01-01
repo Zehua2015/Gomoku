@@ -59,6 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets/Photon/PhotonRealtime/Demos/DemoLoadBalancing/ConnectAndJoinRandomLb.cs" />
+    <Compile Include="Assets/Gomoku/Scripts/others.cs" />
     <Compile Include="Assets/Photon/PhotonChat/Demos/DemoChat/AppSettingsExtensions.cs" />
     <Compile Include="Assets/Gomoku/Scripts/Gomoku_Player.cs" />
     <Compile Include="Assets/Photon/PhotonChat/Demos/Common/OnStartDelete.cs" />

@@ -35,13 +35,7 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
 
     public TextMeshProUGUI selfTimerTxt;
     public TextMeshProUGUI opponentTimerTxt;
-    //public bool isTimerRunning = false;
 
-    //private float selfTime = 30f;
-    //private float opponentTime = 30f;
-
-
-    private GameObject myPlayer;
     GameObject newPlayer;
     Gomoku_Player gomoku_Player;
     Gomoku_Player[] players;
@@ -113,22 +107,6 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
             };
             PhotonNetwork.LocalPlayer.SetCustomProperties(props);
 
-            //// Find the other player (master client) and get its state
-            //PlayerState state = new PlayerState();
-            //foreach (var item in PhotonNetwork.PlayerList)
-            //{
-            //    if (item == PhotonNetwork.LocalPlayer) continue;
-            //    state = (PlayerState)item.CustomProperties["PlayerState"];
-            //}
-
-            //if (state == PlayerState.Ready)
-            //{
-            //    foreach (var pl in players)
-            //    {
-            //        if (!pl.GetComponent<PhotonView>().IsMine)
-            //            pl.SetReadyState();
-            //    }
-            //}
         }
     }
 
@@ -217,20 +195,7 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
         gameOverTxt.gameObject.SetActive(false);
         waitTxt.gameObject.SetActive(false);
         gameState = GameState.Start;
-        //if (gomoku_Player.pieceColor == PieceColor.Black)
-        //{
-            currentRound.text = gomoku_Player.pieceColor == PieceColor.Black ? "Your round!" : "Opponent's Round";
-        //}
-
-        // start black timer
-        //foreach (var item in players)
-        //{
-        //    if (item.GetComponent<PhotonView>().IsMine)
-        //    {
-        //        item.GetComponent<PhotonView>().RPC("RunTimer", RpcTarget.All, selfTimerTxt.text);
-        //    }
-        //}
-
+        currentRound.text = gomoku_Player.pieceColor == PieceColor.Black ? "Your round!" : "Opponent's Round";
     }
 
     [PunRPC]
@@ -251,7 +216,6 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
 
         gameState = GameState.GameOver;
         gameOver.SetActive(true);
-        //waitTxt.gameObject.SetActive(true);
         winTxt.text = winColor == gomoku_Player.pieceColor ? "You Win!" : "You lose..";
         winTxt.color = winColor == gomoku_Player.pieceColor ? Color.green : Color.red;
         readyButtonTxt.text = "Play Again";
@@ -319,6 +283,10 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
             StartOver();
         }
             getReady();
+        foreach (var item in players)
+        {
+            Debug.Log(item.playerState);
+        }
 
     }
     public void SetUIState()

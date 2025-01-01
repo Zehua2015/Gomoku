@@ -54,6 +54,8 @@ MonoBehaviour:
   - EndTurn
   - StartTurn
   - EndTimer
+  - DrawRedCircle
+  - DestroyPreviousRedCircle
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0
