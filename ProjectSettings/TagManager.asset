@@ -6,6 +6,7 @@ TagManager:
   tags:
   - gamePiece
   - RedCircle
+  - GreenCircle
   layers:
   - Default
   - TransparentFX

@@ -18,7 +18,6 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
     public GameObject player;
     public PieceColor playerTurn = PieceColor.Black;
     public GameState gameState = GameState.Ready;
-    //public TextMesh
     public GameObject gameOver;
     public AudioSource clickingAudio;
 
@@ -191,6 +190,9 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
     [PunRPC]
     public void SetGameStart()
     {
+        GameObject redCircle = GameObject.FindGameObjectWithTag("RedCircle");
+        if (redCircle != null)
+            Destroy(redCircle);
         clearBoard();
         gameOverTxt.gameObject.SetActive(false);
         waitTxt.gameObject.SetActive(false);
@@ -200,6 +202,7 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
 
     [PunRPC]
     public void GameOver(PieceColor winColor)
+
     {
         Color color = readyBtn.GetComponent<Image>().color;
         color.a = 1f;

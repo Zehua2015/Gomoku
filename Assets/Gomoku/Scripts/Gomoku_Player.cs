@@ -22,6 +22,7 @@ public class Gomoku_Player : MonoBehaviour
     public GameObject black_piece;
     public GameObject white_piece;
     public GameObject red_circle;
+    public GameObject green_circle;
     public List<Gomoku_Piece> currentPieceList = new List<Gomoku_Piece>();
     public PlayerState playerState = PlayerState.NotReady;
     public Gomoku_NetworkManager networkManager;
@@ -29,14 +30,12 @@ public class Gomoku_Player : MonoBehaviour
     public bool isTimerRunning;
 
     public double startTime;
+    private bool preClick = false;
 
     // Start is called before the first frame update
     void Start()
     {
         Application.targetFrameRate = 30;
-        //isTimerRunning = true;
-
-        //networkManager = FindObjectOfType<Gomoku_NetworkManager>();
         zeroPointPosition = new Vector3(-2.07f, -2.07f, 0);
         //cellWidth = 0.4308f; // 4.41/19
         //pv = this.GetComponent<PhotonView>();
@@ -49,6 +48,7 @@ public class Gomoku_Player : MonoBehaviour
         {
             GameObject.FindObjectOfType<Gomoku_NetworkManager>().SetOpponentText(pieceColor);
         }
+        preClick = false;
     }
     private void Awake()
     {
@@ -66,7 +66,6 @@ public class Gomoku_Player : MonoBehaviour
         var players = GameObject.FindObjectsOfType<Gomoku_Player>();
         foreach (var item in players)
         {
-            //if (item.playerState != PlayerState.Ready || PhotonNetwork.PlayerList.Length != 2) return;
             if (item.playerState != PlayerState.Ready || players.Length != 2) return;
         }
 
@@ -112,12 +111,22 @@ public class Gomoku_Player : MonoBehaviour
                     print("already a piece here!");
                     return;
                 }
-                
             }
 
             Vector3 piecePos = new Vector3(column * cellWidth, row * cellWidth, zeroPointPosition.z) + zeroPointPosition;
 
             // Generate online piece
+            if (!preClick)
+            {
+                DrawGreenCircle(piecePos);
+                preClick = true;
+                return;
+            }
+            else
+            {
+                DestroyPreviousGreenCircle();
+                preClick = false;
+            }
             if (pieceColor == PieceColor.Black)
             {
                 newPiece = PhotonNetwork.Instantiate(black_piece.name, piecePos, black_piece.transform.rotation);
@@ -130,14 +139,6 @@ public class Gomoku_Player : MonoBehaviour
                 newPiece.GetComponent<PhotonView>().RPC("SetRowColumnValue", RpcTarget.All, rowColumnValue);
                 currentPiece = newPiece.GetComponent<Gomoku_Piece>();
             }
-
-            //redCircle = PhotonNetwork.Instantiate(red_circle.name, piecePos, red_circle.transform.rotation);
-
-
-
-            // Destory previous red circle
-            //GameObject red = GameObject.FindGameObjectWithTag("RedCircle");
-            //if (red != null) Destroy(red);
 
             foreach (var item in players)
             {
@@ -420,4 +421,16 @@ public class Gomoku_Player : MonoBehaviour
         GameObject red = GameObject.FindGameObjectWithTag("RedCircle");
         if (red != null) Destroy(red);
     }
+
+    public void DrawGreenCircle(Vector3 pos)
+    {
+        Instantiate(green_circle, pos, green_circle.transform.rotation);
+    }
+
+    public void DestroyPreviousGreenCircle()
+    {
+        GameObject green = GameObject.FindGameObjectWithTag("GreenCircle");
+        if (green != null) Destroy(green);
+    }
+
 }
