@@ -2,7 +2,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 using System.Linq;
-using ExitGames.Client.Photon;
+using Phon = ExitGames.Client.Photon;
+using System.Collections;
 
 public enum PlayerState
 {
@@ -23,11 +24,17 @@ public class Gomoku_Player : MonoBehaviour
     public GameObject white_piece;
     public GameObject red_circle;
     public GameObject green_circle;
+    public GameObject win_circle;
     public List<Gomoku_Piece> currentPieceList = new List<Gomoku_Piece>();
     public PlayerState playerState = PlayerState.NotReady;
     public Gomoku_NetworkManager networkManager;
     private float playerTime = 20f;
     public bool isTimerRunning;
+
+    private List<Gomoku_Piece> winnerList = new List<Gomoku_Piece>();
+    private List<Vector3> posList = new List<Vector3>();
+    private Vector3 preClickPosition;
+
 
     public double startTime;
     private bool preClick = false;
@@ -118,13 +125,23 @@ public class Gomoku_Player : MonoBehaviour
             // Generate online piece
             if (!preClick)
             {
+                preClickPosition = piecePos;
                 DrawGreenCircle(piecePos);
                 preClick = true;
                 return;
             }
-            else
+            else if (preClickPosition != piecePos)
             {
-                DestroyPreviousGreenCircle();
+                //preClick = false;
+                preClickPosition = piecePos;
+                DestroyAllGreenCircle();
+                DrawGreenCircle(piecePos);
+                return;
+            }
+            else
+            { 
+                DestroyAllGreenCircle();
+                DestroyAllRedCircle();
                 preClick = false;
             }
             if (pieceColor == PieceColor.Black)
@@ -140,11 +157,11 @@ public class Gomoku_Player : MonoBehaviour
                 currentPiece = newPiece.GetComponent<Gomoku_Piece>();
             }
 
-            foreach (var item in players)
-            {
-                if (item.GetComponent<PhotonView>().IsMine) continue;
-                item.GetComponent<PhotonView>().RPC("DestroyPreviousRedCircle", RpcTarget.All);
-            }
+            //foreach (var item in players)
+            //{
+            //    if (item.GetComponent<PhotonView>().IsMine) continue;
+            //    item.GetComponent<PhotonView>().RPC("DestroyPreviousRedCircle", RpcTarget.All);
+            //}
 
             pv.RPC("DrawRedCircle", RpcTarget.Others, piecePos);
             
@@ -159,6 +176,10 @@ public class Gomoku_Player : MonoBehaviour
             {
                 gameObject.GetComponent<PhotonView>().RPC("EndTimer", RpcTarget.All);
                 GameObject.FindObjectOfType<Gomoku_NetworkManager>().GetComponent<PhotonView>().RPC("GameOver",RpcTarget.All, pieceColor);
+                Vector3[] posArray = posList.ToArray();
+                print("length");
+                print(posArray.Count());
+                pv.RPC("HighlightFivePieces", RpcTarget.All, posArray);
             }
 
 
@@ -171,9 +192,12 @@ public class Gomoku_Player : MonoBehaviour
         }
     }
 
+
     bool IfFivePiece(List<Gomoku_Piece> currentList, Gomoku_Piece currentPiece)
     {
         bool result = false;
+        if (winnerList != null && winnerList.Count > 0) winnerList.Clear();
+        if (posList != null && posList.Count > 0) posList.Clear();
 
         // using current piece to find surrounding piece
         List<Gomoku_Piece> currentColorList = currentList.Where(en => en.pieceColor == pieceColor).ToList();
@@ -185,16 +209,110 @@ public class Gomoku_Player : MonoBehaviour
         var bottomRightList = GetSameColorDirection(currentColorList, currentPiece, PieceDirection.BottomRight);
         var topRightList = GetSameColorDirection(currentColorList, currentPiece, PieceDirection.TopRight);
         var bottomLeftList = GetSameColorDirection(currentColorList, currentPiece, PieceDirection.BottomLeft);
-        //print(upList.Count + ":" + downList.Count + ":" + leftList.Count + ":" + rightList.Count + ":" + topLeftList.Count + ":" + bottomRightList.Count + ":" + topRightList.Count + ":" + bottomLeftList.Count);
 
-        if ((upList.Count + downList.Count + 1 == 5) ||
-            (leftList.Count + rightList.Count + 1 == 5) ||
-            (topLeftList.Count + bottomRightList.Count + 1 == 5) ||
-            (topRightList.Count + bottomLeftList.Count + 1 == 5))
+        if ((upList.Count + downList.Count + 1 >= 5) ||
+            (leftList.Count + rightList.Count + 1 >= 5) ||
+            (topLeftList.Count + bottomRightList.Count + 1 >= 5) ||
+            (topRightList.Count + bottomLeftList.Count + 1 >= 5))
             result = true;
+
+        if (upList.Count + downList.Count + 1 >= 5)
+        {
+            //List<Gomoku_Piece> winnerList = new List<Gomoku_Piece>();
+            winnerList.AddRange(upList);
+            winnerList.AddRange(downList);
+            winnerList.Add(currentPiece);
+            //HighlightFivePieces(winnerList);
+        }
+        else if (leftList.Count + rightList.Count + 1 >= 5)
+        {
+            //List<Gomoku_Piece> winnerList = new List<Gomoku_Piece>();
+            winnerList.AddRange(leftList);
+            winnerList.AddRange(rightList);
+            winnerList.Add(currentPiece);
+            //HighlightFivePieces(winnerList);
+        }
+        else if (topLeftList.Count + bottomRightList.Count + 1 >= 5)
+        {
+            //List<Gomoku_Piece> winnerList = new List<Gomoku_Piece>();
+            winnerList.AddRange(topLeftList);
+            winnerList.AddRange(bottomRightList);
+            winnerList.Add(currentPiece);
+            //HighlightFivePieces(winnerList);
+        }
+        else if (topRightList.Count + bottomLeftList.Count + 1 >= 5)
+        {
+            //List<Gomoku_Piece> winnerList = new List<Gomoku_Piece>();
+            winnerList.AddRange(topRightList);
+            winnerList.AddRange(bottomLeftList);
+            winnerList.Add(currentPiece);
+            //HighlightFivePieces(winnerList);
+        }
+        if (result)
+        {
+            winnerList = winnerList.OrderBy(e => e.row)
+                .ThenBy(e => e.column)
+                .ToList();
+            print("winnerlist lenght");
+            print(winnerList.Count);
+            foreach (var item in winnerList)
+            {
+                Vector3 piecePos = new Vector3(item.column * cellWidth, item.row * cellWidth, zeroPointPosition.z) + zeroPointPosition;
+                posList.Add(piecePos);
+            }
+            print("poslist lenght");
+            print(posList.Count);
+
+        }
+
 
         return result;
     }
+
+
+    /// <summary>
+    /// Highlight the winner four pieces 
+    /// </summary>
+    /// <param name="fivePieces"></param>
+    [PunRPC]
+    public void HighlightFivePieces(Vector3[] pos)
+    {
+        print("start");
+        List<Vector3> positions = new List<Vector3>(pos);
+        //List<Vector3> fivePieces = new List<Vector3>(list);
+        //fivePieces = fivePieces.OrderBy(e => e.row)
+        //    .ThenBy(e => e.column)
+        //    .ToList();
+        //List<Vector3> positions = new List<Vector3>();
+        //foreach (var item in fivePieces)
+        //{
+        //    Vector3 piecePos = new Vector3(item.column * cellWidth, item.row * cellWidth, zeroPointPosition.z) + zeroPointPosition;
+        //    positions.Add(piecePos);
+        //}
+
+        StartCoroutine(SpawnObjects(positions));
+        return;
+    }
+
+    IEnumerator SpawnObjects(List<Vector3> pos)
+    {
+
+        print("start2");
+        foreach (var item in pos)
+        {
+            print(item);
+            if (pv.IsMine)
+            {
+                Instantiate(green_circle, item, green_circle.transform.rotation);
+            }
+            else
+            {
+                Instantiate(red_circle, item, red_circle.transform.rotation);
+            }
+            yield return new WaitForSeconds(0.1f);
+        }
+    }
+ 
 
     List<Gomoku_Piece> GetSameColorDirection(List<Gomoku_Piece> currentColorList, Gomoku_Piece currentPiece, PieceDirection direction)
     {
@@ -327,7 +445,7 @@ public class Gomoku_Player : MonoBehaviour
     public void SetReadyState()
     {
         // Hashtable first
-        Hashtable props = new Hashtable
+        Phon.Hashtable props = new Phon.Hashtable
         {
             { "PlayerState", PlayerState.Ready }
         };
@@ -416,21 +534,30 @@ public class Gomoku_Player : MonoBehaviour
     }
 
     [PunRPC]
-    public void DestroyPreviousRedCircle()
+    public void DestroyAllRedCircle()
     {
-        GameObject red = GameObject.FindGameObjectWithTag("RedCircle");
-        if (red != null) Destroy(red);
+        GameObject[] reds = GameObject.FindGameObjectsWithTag("RedCircle");
+        if (reds.Length == 0) return;
+        foreach (var item in reds)
+        {
+            Destroy(item);
+        }
+
     }
 
-    public void DrawGreenCircle(Vector3 pos)
+    public GameObject DrawGreenCircle(Vector3 pos)
     {
-        Instantiate(green_circle, pos, green_circle.transform.rotation);
+        return Instantiate(green_circle, pos, green_circle.transform.rotation);
     }
 
-    public void DestroyPreviousGreenCircle()
+    public void DestroyAllGreenCircle()
     {
-        GameObject green = GameObject.FindGameObjectWithTag("GreenCircle");
-        if (green != null) Destroy(green);
+        GameObject[] greens = GameObject.FindGameObjectsWithTag("GreenCircle");
+        if (greens.Length == 0) return;
+        foreach (var item in greens)
+        {
+            Destroy(item);
+        }
     }
 
 }

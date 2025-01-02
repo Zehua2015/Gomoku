@@ -237,6 +237,8 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
     public void StartOver()
     {
         gomoku_Player.GetComponent<PhotonView>().RPC("ResetTimer", RpcTarget.All);
+        gomoku_Player.DestroyAllGreenCircle();
+        gomoku_Player.DestroyAllRedCircle();
         resetUIState();
         //clearBoard();
         gameState = GameState.Ready;

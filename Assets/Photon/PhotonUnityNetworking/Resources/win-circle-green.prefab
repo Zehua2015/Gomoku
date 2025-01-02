@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 6493618925295064881}
   - component: {fileID: 4273078376097707111}
   m_Layer: 0
-  m_Name: green-circle
+  m_Name: win-circle-green
   m_TagString: GreenCircle
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

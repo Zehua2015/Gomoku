@@ -74,6 +74,7 @@ MonoBehaviour:
   white_piece: {fileID: 7841268036669612680, guid: 098586c0bd19a4f1197bee6c8393ee54, type: 3}
   red_circle: {fileID: 2623469084161331961, guid: 2d98eca01f7db47418d6f62dac623011, type: 3}
   green_circle: {fileID: 7748452871585619376, guid: 9030ac7916ad5415c9db8a30b5202988, type: 3}
+  win_circle: {fileID: 4520952507638926887, guid: 7a1b3b774995041c58a5e91f433e9dbe, type: 3}
   currentPieceList: []
   playerState: 0
   networkManager: {fileID: 0}
