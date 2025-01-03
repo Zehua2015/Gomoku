@@ -35,6 +35,11 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
     public TextMeshProUGUI selfTimerTxt;
     public TextMeshProUGUI opponentTimerTxt;
 
+    public GameObject selfBlackTag;
+    public GameObject selfWhiteTag;
+    public GameObject OpponentBlackTag;
+    public GameObject OpponentWhiteTag;
+
     GameObject newPlayer;
     Gomoku_Player gomoku_Player;
     Gomoku_Player[] players;
@@ -48,6 +53,10 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
         // Connect Server
         PhotonNetwork.ConnectUsingSettings();
         readyBtn.gameObject.SetActive(false);
+        selfBlackTag.SetActive(false);
+        selfWhiteTag.SetActive(false);
+        OpponentBlackTag.SetActive(false);
+        OpponentWhiteTag.SetActive(false);
     }
 
     // Update is called once per frame
@@ -107,11 +116,13 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
             PhotonNetwork.LocalPlayer.SetCustomProperties(props);
 
         }
+        SetGameTag();
     }
 
     public override void OnPlayerEnteredRoom(Player nPlayer)
     {
         base.OnPlayerEnteredRoom(nPlayer);
+        SetGameTag();
         if (newPlayer.GetComponent<Gomoku_Player>().playerState == PlayerState.NotReady) return;
         foreach (var item in players)
         {
@@ -198,6 +209,31 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
         waitTxt.gameObject.SetActive(false);
         gameState = GameState.Start;
         currentRound.text = gomoku_Player.pieceColor == PieceColor.Black ? "Your round!" : "Opponent's Round";
+        SetGameTag();
+        
+    }
+
+    public void SetGameTag()
+    {
+        if (gomoku_Player.pieceColor == PieceColor.Black)
+        {
+            selfBlackTag.SetActive(true);
+            selfWhiteTag.SetActive(false);
+            OpponentBlackTag.SetActive(false);
+            OpponentWhiteTag.SetActive(true);
+        }
+        else
+        {
+            selfBlackTag.SetActive(false);
+            selfWhiteTag.SetActive(true);
+            OpponentBlackTag.SetActive(true);
+            OpponentWhiteTag.SetActive(false);
+        }
+        if (PhotonNetwork.PlayerList.Length == 1)
+        {
+            OpponentBlackTag.SetActive(false);
+            OpponentWhiteTag.SetActive(false);
+        }
     }
 
     [PunRPC]
@@ -309,8 +345,6 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
     {
         currentRound.text = "";
         waitTxt.gameObject.SetActive(true);
-
-        //gameOverTxt.gameObject.SetActive(false);
     }
 
     public void SetSelfText(PieceColor pieceColor)

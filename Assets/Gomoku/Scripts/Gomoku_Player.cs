@@ -157,12 +157,6 @@ public class Gomoku_Player : MonoBehaviour
                 currentPiece = newPiece.GetComponent<Gomoku_Piece>();
             }
 
-            //foreach (var item in players)
-            //{
-            //    if (item.GetComponent<PhotonView>().IsMine) continue;
-            //    item.GetComponent<PhotonView>().RPC("DestroyPreviousRedCircle", RpcTarget.All);
-            //}
-
             pv.RPC("DrawRedCircle", RpcTarget.Others, piecePos);
             
             // Play clicking sound
@@ -175,20 +169,14 @@ public class Gomoku_Player : MonoBehaviour
             if (isFive)
             {
                 gameObject.GetComponent<PhotonView>().RPC("EndTimer", RpcTarget.All);
-                GameObject.FindObjectOfType<Gomoku_NetworkManager>().GetComponent<PhotonView>().RPC("GameOver",RpcTarget.All, pieceColor);
                 Vector3[] posArray = posList.ToArray();
-                print("length");
-                print(posArray.Count());
                 pv.RPC("HighlightFivePieces", RpcTarget.All, posArray);
+                //GameObject.FindObjectOfType<Gomoku_NetworkManager>().GetComponent<PhotonView>().RPC("GameOver",RpcTarget.All, pieceColor);
             }
-
-
 
             // change turn
             gameObject.GetComponent<PhotonView>().RPC("EndTimer", RpcTarget.All);
             GameObject.FindObjectOfType<Gomoku_NetworkManager>().gameObject.GetComponent<PhotonView>().RPC("ChangeTurn",RpcTarget.All);
-
-
         }
     }
 
@@ -218,35 +206,27 @@ public class Gomoku_Player : MonoBehaviour
 
         if (upList.Count + downList.Count + 1 >= 5)
         {
-            //List<Gomoku_Piece> winnerList = new List<Gomoku_Piece>();
             winnerList.AddRange(upList);
             winnerList.AddRange(downList);
             winnerList.Add(currentPiece);
-            //HighlightFivePieces(winnerList);
         }
         else if (leftList.Count + rightList.Count + 1 >= 5)
         {
-            //List<Gomoku_Piece> winnerList = new List<Gomoku_Piece>();
             winnerList.AddRange(leftList);
             winnerList.AddRange(rightList);
             winnerList.Add(currentPiece);
-            //HighlightFivePieces(winnerList);
         }
         else if (topLeftList.Count + bottomRightList.Count + 1 >= 5)
         {
-            //List<Gomoku_Piece> winnerList = new List<Gomoku_Piece>();
             winnerList.AddRange(topLeftList);
             winnerList.AddRange(bottomRightList);
             winnerList.Add(currentPiece);
-            //HighlightFivePieces(winnerList);
         }
         else if (topRightList.Count + bottomLeftList.Count + 1 >= 5)
         {
-            //List<Gomoku_Piece> winnerList = new List<Gomoku_Piece>();
             winnerList.AddRange(topRightList);
             winnerList.AddRange(bottomLeftList);
             winnerList.Add(currentPiece);
-            //HighlightFivePieces(winnerList);
         }
         if (result)
         {
@@ -279,17 +259,6 @@ public class Gomoku_Player : MonoBehaviour
     {
         print("start");
         List<Vector3> positions = new List<Vector3>(pos);
-        //List<Vector3> fivePieces = new List<Vector3>(list);
-        //fivePieces = fivePieces.OrderBy(e => e.row)
-        //    .ThenBy(e => e.column)
-        //    .ToList();
-        //List<Vector3> positions = new List<Vector3>();
-        //foreach (var item in fivePieces)
-        //{
-        //    Vector3 piecePos = new Vector3(item.column * cellWidth, item.row * cellWidth, zeroPointPosition.z) + zeroPointPosition;
-        //    positions.Add(piecePos);
-        //}
-
         StartCoroutine(SpawnObjects(positions));
         return;
     }
@@ -311,6 +280,7 @@ public class Gomoku_Player : MonoBehaviour
             }
             yield return new WaitForSeconds(0.1f);
         }
+        GameObject.FindObjectOfType<Gomoku_NetworkManager>().GetComponent<PhotonView>().RPC("GameOver", RpcTarget.All, pieceColor);
     }
  
 
@@ -458,6 +428,7 @@ public class Gomoku_Player : MonoBehaviour
         if (pv.IsMine)
         {
             GameObject.FindAnyObjectByType<Gomoku_NetworkManager>().selfReady.text = "Ready";
+            networkManager.SetGameTag();
         }
         else
         {

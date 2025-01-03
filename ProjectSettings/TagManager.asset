@@ -7,7 +7,10 @@ TagManager:
   - gamePiece
   - RedCircle
   - GreenCircle
-  - WinCircleRed
+  - BlackTag
+  - WhiteTag
+  - OpponentBlackTag
+  - OpponentWhiteTag
   layers:
   - Default
   - TransparentFX
