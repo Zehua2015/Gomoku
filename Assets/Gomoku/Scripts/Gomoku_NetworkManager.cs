@@ -39,6 +39,9 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
     public GameObject selfWhiteTag;
     public GameObject OpponentBlackTag;
     public GameObject OpponentWhiteTag;
+    public bool isSecondRound = false;
+
+    public Animation_Controller animation_Controller;
 
     GameObject newPlayer;
     Gomoku_Player gomoku_Player;
@@ -279,6 +282,7 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
         //clearBoard();
         gameState = GameState.Ready;
         playerTurn = PieceColor.Black;
+        //animation_Controller.PlayChangeSidePanel();
         changeSide();
     }
 
@@ -322,12 +326,9 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
         if (gameState == GameState.GameOver)
         {
             StartOver();
+            isSecondRound = true;
         }
             getReady();
-        foreach (var item in players)
-        {
-            Debug.Log(item.playerState);
-        }
 
     }
     public void SetUIState()

@@ -79,6 +79,10 @@ public class Gomoku_Player : MonoBehaviour
         if (networkManager.gameState != GameState.Start)
         {
             networkManager.SetGameStart();
+            if (networkManager.isSecondRound)
+            {
+                networkManager.animation_Controller.PlayChangeSidePanel();
+            }
             gameObject.GetComponent<PhotonView>().RPC("StartTimer", RpcTarget.All);
 
         }
