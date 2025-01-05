@@ -214,6 +214,8 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
     [PunRPC]
     public void SetGameStart()
     {
+        gomoku_Player.isTimerRunning = true;
+        animation_Controller.DeactiveGameOverPanel();
         GameObject redCircle = GameObject.FindGameObjectWithTag("RedCircle");
         if (redCircle != null)
             Destroy(redCircle);
@@ -226,6 +228,7 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
 
         if (isSecondRound)
         {
+            newPlayer.GetComponent<PhotonView>().RPC("StartTimer", RpcTarget.All);
             blackWhiteTxt.text = gomoku_Player.pieceColor == PieceColor.Black ? "Black" : "White";
             blackWhiteImg.sprite = gomoku_Player.pieceColor == PieceColor.Black ? blackSprite : whiteSprite;
             StartCoroutine(waitForAnimationEnds());
@@ -272,6 +275,7 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
     public void GameOver(PieceColor winColor)
 
     {
+        print(gomoku_Player.isTimerRunning);
         Color color = readyBtn.GetComponent<Image>().color;
         color.a = 1f;
         readyBtn.GetComponent<Image>().color = color;
@@ -289,6 +293,8 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
         gameOver.SetActive(true);
         winTxt.text = winColor == gomoku_Player.pieceColor ? "You Win!" : "You lose..";
         winTxt.color = winColor == gomoku_Player.pieceColor ? Color.green : Color.red;
+        animation_Controller.playGameOverSideAnimation();
+        gomoku_Player.isTimerRunning = true;
         readyButtonTxt.text = "Play Again";
     }
 

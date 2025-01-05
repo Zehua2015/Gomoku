@@ -6,7 +6,10 @@ using UnityEngine.UI;
 public class Animation_Controller : MonoBehaviour
 {
     public GameObject ChangeSidePanel2;
+    public GameObject GameOverPanel;
     public Animation ChangeSideAnimation;
+    public Animation GameOverAnimation;
+
 
 
     //public CanvasGroup playerPanel;
@@ -45,8 +48,30 @@ public class Animation_Controller : MonoBehaviour
         float aniLength = ChangeSideAnimation.GetClip("ChangeSidePanel").length;
         yield return new WaitForSeconds(aniLength);
         ChangeSidePanel2.SetActive(false);
-
     }
+
+    public void playGameOverSideAnimation()
+    {
+        GameOverPanel.SetActive(true);
+        //StartCoroutine(playAndDeactiveGameOverAnimation());
+        //return GameOverAnimation.GetClip("GameOverPanel").length;
+        GameOverAnimation.Play("GameOverPanel");
+        return;
+    }
+
+    public void DeactiveGameOverPanel()
+    {
+        GameOverPanel.SetActive(false);
+    }
+    //private IEnumerator playAndDeactiveGameOverAnimation()
+    //{
+    //    GameOverPanel.SetActive(true);
+    //    GameOverAnimation.Play("GameOverPanel");
+
+    //    float aniLength = GameOverAnimation.GetClip("GameOverPanel").length;
+    //    yield return new WaitForSeconds(aniLength);
+    //    GameOverPanel.SetActive(false);
+    //}
 
     //public void PlayChangeSidePanel()
     //{

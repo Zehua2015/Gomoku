@@ -78,6 +78,7 @@ public class Gomoku_Player : MonoBehaviour
 
         if (networkManager.gameState != GameState.Start)
         {
+            isTimerRunning = true;
             networkManager.SetGameStart();
             //gameObject.GetComponent<PhotonView>().RPC("StartTimer", RpcTarget.All);
 
@@ -90,7 +91,8 @@ public class Gomoku_Player : MonoBehaviour
         if (!isTimerRunning)
         {
             var color = pieceColor == PieceColor.Black ? PieceColor.White : PieceColor.Black;
-            GameObject.FindObjectOfType<Gomoku_NetworkManager>().GetComponent<PhotonView>().RPC("GameOver", RpcTarget.All, color);
+            if (networkManager.gameState == GameState.Start)
+                GameObject.FindObjectOfType<Gomoku_NetworkManager>().GetComponent<PhotonView>().RPC("GameOver", RpcTarget.All, color);
         }
         // Start timer
         gameObject.GetComponent<PhotonView>().RPC("RunTimer", RpcTarget.All);
@@ -171,7 +173,6 @@ public class Gomoku_Player : MonoBehaviour
                 gameObject.GetComponent<PhotonView>().RPC("EndTimer", RpcTarget.All);
                 Vector3[] posArray = posList.ToArray();
                 pv.RPC("HighlightFivePieces", RpcTarget.All, posArray);
-                //GameObject.FindObjectOfType<Gomoku_NetworkManager>().GetComponent<PhotonView>().RPC("GameOver",RpcTarget.All, pieceColor);
             }
 
             // change turn
@@ -233,15 +234,11 @@ public class Gomoku_Player : MonoBehaviour
             winnerList = winnerList.OrderBy(e => e.row)
                 .ThenBy(e => e.column)
                 .ToList();
-            //print("winnerlist lenght");
-            print(winnerList.Count);
             foreach (var item in winnerList)
             {
                 Vector3 piecePos = new Vector3(item.column * cellWidth, item.row * cellWidth, zeroPointPosition.z) + zeroPointPosition;
                 posList.Add(piecePos);
             }
-            //print("poslist lenght");
-            print(posList.Count);
 
         }
 
@@ -257,7 +254,6 @@ public class Gomoku_Player : MonoBehaviour
     [PunRPC]
     public void HighlightFivePieces(Vector3[] pos)
     {
-        //print("start");
         List<Vector3> positions = new List<Vector3>(pos);
         StartCoroutine(SpawnObjects(positions));
         return;
@@ -265,11 +261,8 @@ public class Gomoku_Player : MonoBehaviour
 
     IEnumerator SpawnObjects(List<Vector3> pos)
     {
-
-        //print("start2");
         foreach (var item in pos)
         {
-            print(item);
             if (pv.IsMine)
             {
                 Instantiate(green_circle, item, green_circle.transform.rotation);
@@ -423,7 +416,6 @@ public class Gomoku_Player : MonoBehaviour
 
         playerState = PlayerState.Ready;
 
-        //print("ready1");
         //pv = this.GetComponent<PhotonView>();
         //networkManager = FindObjectOfType<Gomoku_NetworkManager>();
         if (pv.IsMine)
@@ -431,13 +423,11 @@ public class Gomoku_Player : MonoBehaviour
             GameObject.FindAnyObjectByType<Gomoku_NetworkManager>().selfReady.text = "Ready";
             networkManager.selfReady.text = "Ready";
             networkManager.SetGameTag();
-            //print("ready2");
         }
         else
         {
             //GameObject.FindAnyObjectByType<Gomoku_NetworkManager>().OpponentReady.text = "Ready";
             networkManager.OpponentReady.text = "Ready";
-            //print("ready3");
         }
     }
 
