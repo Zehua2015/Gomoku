@@ -57,7 +57,7 @@ public class Gomoku_Player : MonoBehaviour
         }
         preClick = false;
     }
-    private void Awake()
+    void Awake()
     {
         pv = this.GetComponent<PhotonView>();
         networkManager = FindObjectOfType<Gomoku_NetworkManager>();
@@ -79,11 +79,7 @@ public class Gomoku_Player : MonoBehaviour
         if (networkManager.gameState != GameState.Start)
         {
             networkManager.SetGameStart();
-            if (networkManager.isSecondRound)
-            {
-                networkManager.animation_Controller.PlayChangeSidePanel();
-            }
-            gameObject.GetComponent<PhotonView>().RPC("StartTimer", RpcTarget.All);
+            //gameObject.GetComponent<PhotonView>().RPC("StartTimer", RpcTarget.All);
 
         }
 
@@ -237,14 +233,14 @@ public class Gomoku_Player : MonoBehaviour
             winnerList = winnerList.OrderBy(e => e.row)
                 .ThenBy(e => e.column)
                 .ToList();
-            print("winnerlist lenght");
+            //print("winnerlist lenght");
             print(winnerList.Count);
             foreach (var item in winnerList)
             {
                 Vector3 piecePos = new Vector3(item.column * cellWidth, item.row * cellWidth, zeroPointPosition.z) + zeroPointPosition;
                 posList.Add(piecePos);
             }
-            print("poslist lenght");
+            //print("poslist lenght");
             print(posList.Count);
 
         }
@@ -261,7 +257,7 @@ public class Gomoku_Player : MonoBehaviour
     [PunRPC]
     public void HighlightFivePieces(Vector3[] pos)
     {
-        print("start");
+        //print("start");
         List<Vector3> positions = new List<Vector3>(pos);
         StartCoroutine(SpawnObjects(positions));
         return;
@@ -270,7 +266,7 @@ public class Gomoku_Player : MonoBehaviour
     IEnumerator SpawnObjects(List<Vector3> pos)
     {
 
-        print("start2");
+        //print("start2");
         foreach (var item in pos)
         {
             print(item);
@@ -427,16 +423,21 @@ public class Gomoku_Player : MonoBehaviour
 
         playerState = PlayerState.Ready;
 
+        //print("ready1");
         //pv = this.GetComponent<PhotonView>();
         //networkManager = FindObjectOfType<Gomoku_NetworkManager>();
         if (pv.IsMine)
         {
             GameObject.FindAnyObjectByType<Gomoku_NetworkManager>().selfReady.text = "Ready";
+            networkManager.selfReady.text = "Ready";
             networkManager.SetGameTag();
+            //print("ready2");
         }
         else
         {
-            GameObject.FindAnyObjectByType<Gomoku_NetworkManager>().OpponentReady.text = "Ready";
+            //GameObject.FindAnyObjectByType<Gomoku_NetworkManager>().OpponentReady.text = "Ready";
+            networkManager.OpponentReady.text = "Ready";
+            //print("ready3");
         }
     }
 

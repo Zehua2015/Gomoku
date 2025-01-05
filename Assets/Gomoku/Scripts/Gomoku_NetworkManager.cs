@@ -1,11 +1,12 @@
 //using System.Collections;
-using System.Collections.Generic;
+//using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
-using ExitGames.Client.Photon;
+using Phon = ExitGames.Client.Photon;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
 
 public enum GameState {
     Ready = 1,
@@ -43,9 +44,16 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
 
     public Animation_Controller animation_Controller;
 
+    public TextMeshProUGUI blackWhiteTxt;
+    public Image blackWhiteImg;
+    public Sprite blackSprite;
+    public Sprite whiteSprite;
+
     GameObject newPlayer;
     Gomoku_Player gomoku_Player;
     Gomoku_Player[] players;
+
+    //public Animation changeSideAnimation;
     
 
 
@@ -99,7 +107,7 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
         {
             // TODO: delete RPC
             newPlayer.GetComponent<PhotonView>().RPC("SetPieceColor", RpcTarget.All, PieceColor.Black);
-            Hashtable props = new Hashtable
+            Phon.Hashtable props = new Phon.Hashtable
             {
                 { "PlayerState", PlayerState.NotReady },
                 { "PieceColor", PieceColor.Black }
@@ -111,7 +119,7 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
             // TODO: delete RPC
             newPlayer.GetComponent<PhotonView>().RPC("SetPieceColor", RpcTarget.All, PieceColor.White) ;
 
-            Hashtable props = new Hashtable
+            Phon.Hashtable props = new Phon.Hashtable
             {
                 { "PlayerState", PlayerState.NotReady },
                 { "PieceColor", PieceColor.White }
@@ -132,6 +140,7 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
             if (item.GetComponent<PhotonView>().IsMine)
             {
                 item.GetComponent<PhotonView>().RPC("SetReadyState", RpcTarget.All);
+                Debug.Log("hi..I tried to set");
             }
         }
 
@@ -176,6 +185,7 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
     [PunRPC]
     public void ChangeTurn()
     {
+        //changeSideAnimation.Play("ChangeSidePanel");
         playerTurn = playerTurn == PieceColor.Black ? PieceColor.White : PieceColor.Black;
         foreach (var item in players)
         {
@@ -213,7 +223,26 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
         gameState = GameState.Start;
         currentRound.text = gomoku_Player.pieceColor == PieceColor.Black ? "Your round!" : "Opponent's Round";
         SetGameTag();
-        
+
+        if (isSecondRound)
+        {
+            blackWhiteTxt.text = gomoku_Player.pieceColor == PieceColor.Black ? "Black" : "White";
+            blackWhiteImg.sprite = gomoku_Player.pieceColor == PieceColor.Black ? blackSprite : whiteSprite;
+            StartCoroutine(waitForAnimationEnds());
+        }
+        else
+        {
+            newPlayer.GetComponent<PhotonView>().RPC("StartTimer", RpcTarget.All);
+        }
+        return;
+    }
+
+
+    public IEnumerator waitForAnimationEnds()
+    {
+        float time = animation_Controller.playChangeSideAnimation();
+        yield return new WaitForSeconds(time);
+        newPlayer.GetComponent<PhotonView>().RPC("StartTimer", RpcTarget.All);
     }
 
     public void SetGameTag()
@@ -283,6 +312,12 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
         gameState = GameState.Ready;
         playerTurn = PieceColor.Black;
         //animation_Controller.PlayChangeSidePanel();
+        //if (isSecondRound)
+        //{
+        //    blackWhiteTxt.text = gomoku_Player.pieceColor == PieceColor.Black ? "White" : "Black";
+        //    blackWhiteImg.sprite = gomoku_Player.pieceColor == PieceColor.Black ? whiteSprite : blackSprite;
+        //    animation_Controller.playChangeSideAnimation();
+        //}
         changeSide();
     }
 
@@ -325,8 +360,8 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
     {
         if (gameState == GameState.GameOver)
         {
-            StartOver();
             isSecondRound = true;
+            StartOver();
         }
             getReady();
 
