@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using Photon.Pun;
 using System.Linq;
 using Phon = ExitGames.Client.Photon;
@@ -28,8 +29,11 @@ public class Gomoku_Player : MonoBehaviour
     public List<Gomoku_Piece> currentPieceList = new List<Gomoku_Piece>();
     public PlayerState playerState = PlayerState.NotReady;
     public Gomoku_NetworkManager networkManager;
-    private float playerTime = 20f;
+    private float playerTime;
+    // private float maxTime = 20f;
     public bool isTimerRunning;
+
+    public Slider timeSlider;
 
     private List<Gomoku_Piece> winnerList = new List<Gomoku_Piece>();
     private List<Vector3> posList = new List<Vector3>();
@@ -38,6 +42,7 @@ public class Gomoku_Player : MonoBehaviour
 
     public double startTime;
     private bool preClick = false;
+
 
     // Start is called before the first frame update
     void Start()
@@ -59,10 +64,11 @@ public class Gomoku_Player : MonoBehaviour
     }
     void Awake()
     {
+        playerTime = 20f;
         pv = this.GetComponent<PhotonView>();
         networkManager = FindObjectOfType<Gomoku_NetworkManager>();
     }
-
+    
     // Update is called once per frame
     void Update()
     {
@@ -80,12 +86,14 @@ public class Gomoku_Player : MonoBehaviour
         {
             isTimerRunning = true;
             networkManager.SetGameStart();
-            //gameObject.GetComponent<PhotonView>().RPC("StartTimer", RpcTarget.All);
-
         }
 
         // Return if this is not client player's turn
         if (GameObject.FindObjectOfType<Gomoku_NetworkManager>().playerTurn != pieceColor) return;
+
+        // Reset Timerbar to original position
+        networkManager.SelfTimeBar.InitializeTimerBar(networkManager.maxTime);
+        
 
         // check if time out
         if (!isTimerRunning)
@@ -459,10 +467,13 @@ public class Gomoku_Player : MonoBehaviour
         if (pv.IsMine)
         {
             networkManager.UpdateTimerUI(playerTime);
+            networkManager.SelfTimeBar.UpdateTimerBar(playerTime);
         }
         else
         {
             networkManager.UpdateOpponentTimerUI(playerTime);
+            // TODO: Create enemy timebar
+            networkManager.OpponentTimeBar.UpdateTimerBar(playerTime);
         }
         return;
     }

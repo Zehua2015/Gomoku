@@ -53,6 +53,11 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
     Gomoku_Player gomoku_Player;
     Gomoku_Player[] players;
 
+    public Time_Bar SelfTimeBar;
+    public Time_Bar OpponentTimeBar;
+
+    public float maxTime = 20f;
+
     //public Animation changeSideAnimation;
     
 
@@ -68,6 +73,9 @@ public class Gomoku_NetworkManager : MonoBehaviourPunCallbacks
         selfWhiteTag.SetActive(false);
         OpponentBlackTag.SetActive(false);
         OpponentWhiteTag.SetActive(false);
+
+        SelfTimeBar.InitializeTimerBar(maxTime);
+        OpponentTimeBar.InitializeTimerBar(maxTime);
     }
 
     // Update is called once per frame
